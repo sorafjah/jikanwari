@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>時間割プリントメーカー</title>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ui-bg: #f0f7ff;
+    --ui-primary: #3a7bd5;
+    --ui-primary-light: #d0e4ff;
+    --ui-accent: #ff7043;
+    --ui-border: #b0cce8;
+    --ui-text: #2c3e50;
+    --ui-panel: #ffffff;
+    --ui-green: #2e7d32;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'BIZ UDGothic', sans-serif;
+    background: var(--ui-bg);
+    color: var(--ui-text);
+    font-size: 14px;
+  }
+
+  /* ===== UI ===== */
+  .ui-wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
+  .ui-header {
+    background: var(--ui-primary); color: #fff;
+    padding: 12px 20px; border-radius: 10px 10px 0 0;
+    font-size: 17px; font-weight: 700; letter-spacing: 0.04em;
+  }
+  .ui-body {
+    background: var(--ui-panel); border: 1px solid var(--ui-border);
+    border-top: none; border-radius: 0 0 10px 10px; padding: 18px;
+  }
+  .ui-section { margin-bottom: 16px; }
+  .ui-label { font-weight: 700; color: var(--ui-primary); margin-bottom: 6px; font-size: 13px; }
+  .ui-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+
+  .timetable-editor { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .timetable-editor th {
+    background: var(--ui-primary-light); color: var(--ui-primary);
+    font-weight: 700; padding: 5px 6px; border: 1px solid var(--ui-border);
+    text-align: center; white-space: nowrap;
+  }
+  .timetable-editor td { border: 1px solid var(--ui-border); padding: 3px 4px; }
+  .timetable-editor td input[type="text"] {
+    width: 100%; border: 1px solid #ccc; border-radius: 4px;
+    padding: 3px 5px; font-family: 'BIZ UDGothic', sans-serif;
+    font-size: 12px; color: var(--ui-text);
+  }
+  .timetable-editor td input[type="time"] {
+    border: 1px solid #ccc; border-radius: 4px; padding: 3px 4px;
+    font-family: 'BIZ UDGothic', sans-serif; font-size: 11px; width: 88px;
+  }
+  .td-time { background: #f9f9f9; }
+
+  .q-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .q-type-item {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--ui-primary-light); border: 1.5px solid var(--ui-border);
+    border-radius: 6px; padding: 6px 10px; cursor: pointer;
+    transition: background 0.15s; font-size: 12px;
+  }
+  .q-type-item input[type="checkbox"] { accent-color: var(--ui-primary); width: 15px; height: 15px; }
+  .q-type-item.checked { background: var(--ui-primary); color: #fff; border-color: var(--ui-primary); }
+
+  /* ルビ切り替えトグル */
+  .toggle-row { display: flex; align-items: center; gap: 10px; }
+  .toggle-label { font-size: 13px; font-weight: 700; color: var(--ui-text); }
+  .toggle-wrap { display: flex; border: 1.5px solid var(--ui-border); border-radius: 6px; overflow: hidden; }
+  .toggle-btn {
+    padding: 6px 16px; border: none; background: #fff;
+    font-family: 'BIZ UDGothic', sans-serif; font-size: 13px;
+    cursor: pointer; color: var(--ui-text); transition: background 0.15s;
+  }
+  .toggle-btn.active { background: var(--ui-primary); color: #fff; font-weight: 700; }
+  .toggle-btn:not(:last-child) { border-right: 1.5px solid var(--ui-border); }
+
+  .num-ctrl { display: flex; align-items: center; gap: 4px; }
+  .num-ctrl input[type="number"] {
+    width: 52px; text-align: center; border: 1px solid var(--ui-border);
+    border-radius: 4px; padding: 4px;
+    font-family: 'BIZ UDGothic', sans-serif; font-size: 13px;
+  }
+  .num-btn {
+    width: 26px; height: 26px; border: 1px solid var(--ui-border);
+    background: var(--ui-primary-light); border-radius: 4px;
+    cursor: pointer; font-size: 14px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: var(--ui-primary);
+  }
+  .num-btn:hover { background: var(--ui-primary); color: #fff; }
+
+  .btn {
+    padding: 9px 20px; border: none; border-radius: 7px;
+    font-family: 'BIZ UDGothic', sans-serif; font-size: 13px;
+    font-weight: 700; cursor: pointer; transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-primary { background: var(--ui-primary); color: #fff; }
+  .btn-accent { background: var(--ui-accent); color: #fff; }
+  .btn-green { background: var(--ui-green); color: #fff; }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+
+  /* ===== プレビュー ===== */
+  .preview-wrap {
+    max-width: 900px; margin: 20px auto 0; background: #fff;
+    border: 1px solid var(--ui-border); border-radius: 10px; padding: 20px;
+  }
+  .preview-label { font-size: 12px; color: #888; margin-bottom: 10px; }
+
+  /* ===== 印刷プリント本体（グレースケール） ===== */
+  .print-sheet {
+    font-family: 'BIZ UDGothic', sans-serif;
+    font-size: 12pt; color: #111; background: #fff;
+    width: 100%; max-width: 760px; margin: 0 auto;
+  }
+  .print-name-row {
+    display: flex; justify-content: flex-end; align-items: center;
+    margin-bottom: 12px; gap: 6px;
+  }
+  .print-name-label { font-size: 11pt; white-space: nowrap; }
+  .print-name-line { border-bottom: 1.5px solid #333; width: 180px; height: 22px; }
+  .print-title {
+    text-align: center; font-size: 15pt; font-weight: 700;
+    margin-bottom: 14px; letter-spacing: 0.1em;
+  }
+
+  /* 時間割表 */
+  .tt-table {
+    width: 100%; border-collapse: collapse;
+    margin-bottom: 18px; font-size: 10pt;
+  }
+  .tt-table th, .tt-table td {
+    border: 1.5px solid #555; padding: 5px 4px;
+    text-align: center; vertical-align: middle;
+  }
+  .tt-table th { background: #e0e0e0; font-weight: 700; }
+  .tt-table .col-jikan { width: 30px; font-weight: 700; font-size: 9pt; }
+  .tt-table .col-time  { width: 90px; font-size: 8.5pt; color: #333; line-height: 1.4; }
+  .tt-table .col-day   { font-size: 10pt; }
+  .tt-table .subj-cell { font-size: 10.5pt; min-height: 28px; line-height: 1.5; }
+  ruby rt { font-size: 0.52em; }
+
+  /* 問題 */
+  .q-section-title {
+    font-size: 11pt; font-weight: 700;
+    border-left: 4px solid #555; padding-left: 7px;
+    margin-bottom: 8px; margin-top: 4px;
+  }
+  .q-list { list-style: none; padding: 0; }
+  .q-item {
+    display: flex; align-items: baseline; gap: 6px;
+    margin-bottom: 8px; font-size: 11pt; line-height: 1.8;
+  }
+  .q-num { font-weight: 700; min-width: 24px; }
+  .q-text { flex: 1; }
+  .q-ans {
+    border-bottom: 1.5px solid #333; min-width: 110px;
+    display: inline-block; height: 20px; margin-left: 4px;
+  }
+
+  [contenteditable="true"] {
+    outline: 1.5px dashed #3a7bd5; border-radius: 2px;
+    cursor: text; min-width: 10px; display: inline-block;
+  }
+  [contenteditable="true"]:focus { background: #e8f4ff; outline: 2px solid #3a7bd5; }
+
+  @media print {
+    body { background: #fff !important; }
+    .ui-wrap, .preview-label, .preview-wrap > .btn-row { display: none !important; }
+    .preview-wrap { border: none; padding: 0; margin: 0; border-radius: 0; }
+    .print-sheet { max-width: 100%; }
+    @page { size: A4; margin: 15mm 10mm; }
+    [contenteditable="true"] { outline: none !important; background: transparent !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ui-wrap">
+  <div class="ui-header">週間時間割プリントメーカー</div>
+  <div class="ui-body">
+
+    <!-- 基本設定 -->
+    <div class="ui-section">
+      <div class="ui-label">基本設定</div>
+      <div class="ui-row" style="margin-bottom:10px;align-items:flex-end;">
+        <div>
+          <div class="ui-label" style="color:#555;">1日の時間数</div>
+          <div class="num-ctrl">
+            <button class="num-btn" onclick="changeNum('periods',-1)">▽</button>
+            <input type="number" id="periods" value="6" min="1" max="8" oninput="rebuildEditor()">
+            <button class="num-btn" onclick="changeNum('periods',1)">△</button>
+          </div>
+        </div>
+        <div>
+          <div class="ui-label" style="color:#555;">問題数</div>
+          <div class="num-ctrl">
+            <button class="num-btn" onclick="changeNum('qcount',-1)">▽</button>
+            <input type="number" id="qcount" value="8" min="2" max="20" oninput="">
+            <button class="num-btn" onclick="changeNum('qcount',1)">△</button>
+          </div>
+        </div>
+        <div>
+          <div class="ui-label" style="color:#555;">プリントタイトル</div>
+          <input type="text" id="sheetTitle" value="じかんわりをよもう"
+            style="border:1px solid #b0cce8;border-radius:4px;padding:5px 8px;
+            font-family:'BIZ UDGothic',sans-serif;font-size:13px;width:200px;">
+        </div>
+        <div>
+          <div class="ui-label" style="color:#555;">ルビ（振り仮名）</div>
+          <div class="toggle-wrap">
+            <button class="toggle-btn active" id="rubyOn"  onclick="setRuby(true)">あり</button>
+            <button class="toggle-btn"        id="rubyOff" onclick="setRuby(false)">なし</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 時間割エディタ -->
+      <div style="overflow-x:auto;margin-top:4px;">
+        <table class="timetable-editor" id="editorTable"></table>
+      </div>
+    </div>
+
+    <!-- 問題タイプ -->
+    <div class="ui-section">
+      <div class="ui-label">問題タイプ（複数選択できます）</div>
+      <div class="q-type-grid" id="qTypeGrid">
+        <label class="q-type-item checked" id="qt-A">
+          <input type="checkbox" checked onchange="toggleQType(this,'A')">
+          時刻を読む（○時間目は何時から？）
+        </label>
+        <label class="q-type-item checked" id="qt-B">
+          <input type="checkbox" checked onchange="toggleQType(this,'B')">
+          教科を答える（○時間目は何の授業？）
+        </label>
+        <label class="q-type-item checked" id="qt-C">
+          <input type="checkbox" checked onchange="toggleQType(this,'C')">
+          時間の計算（○時間目は何分間？）
+        </label>
+        <label class="q-type-item checked" id="qt-D">
+          <input type="checkbox" checked onchange="toggleQType(this,'D')">
+          順番を答える（○の授業は何時間目？）
+        </label>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="generatePrint()">問題を生成する</button>
+    </div>
+  </div>
+</div>
+
+<!-- プレビュー -->
+<div class="preview-wrap" id="previewWrap" style="display:none;">
+  <div class="preview-label">▼ プレビュー（文字をクリックすると直接編集できます）</div>
+  <div class="print-sheet" id="printSheet"></div>
+  <div class="btn-row">
+    <button class="btn btn-accent" onclick="window.print()">印刷する</button>
+    <button class="btn btn-green"  onclick="copyHTML()">HTMLをコピーする</button>
+  </div>
+</div>
+
+<script>
+// ====== 定数 ======
+const DAYS     = ['月','火','水','木','金'];
+const DAY_RUBY = {月:'げつ',火:'か',水:'すい',木:'もく',金:'きん'};
+const SUBJ_RUBY = {
+  算数:'さんすう',体育:'たいいく',図工:'ずこう',音楽:'おんがく',
+  道徳:'どうとく',理科:'りか',社会:'しゃかい',学活:'がっかつ',
+  総合:'そうごう',自立活動:'じりつかつどう',学級活動:'がっきゅうかつどう',
+  生活:'せいかつ',国語:'こくご'
+};
+const DEFAULT_SUBJECTS = [
+  ['こくご','算数','体育','図工','音楽','道徳'],
+  ['算数','こくご','音楽','体育','理科','学活'],
+  ['体育','算数','こくご','理科','図工','総合'],
+  ['算数','こくご','社会','音楽','体育','学活'],
+  ['こくご','体育','算数','社会','図工','道徳'],
+];
+const DEFAULT_TIMES = [
+  ['08:45','09:30'],['09:35','10:20'],['10:35','11:20'],
+  ['11:25','12:10'],['13:15','14:00'],['14:05','14:50']
+];
+
+let timetableData = {
+  subjects: JSON.parse(JSON.stringify(DEFAULT_SUBJECTS)),
+  times:    JSON.parse(JSON.stringify(DEFAULT_TIMES))
+};
+let enabledTypes = {A:true,B:true,C:true,D:true};
+let showRuby = true;
+
+// ====== ルビ制御 ======
+function setRuby(flag) {
+  showRuby = flag;
+  document.getElementById('rubyOn').classList.toggle('active', flag);
+  document.getElementById('rubyOff').classList.toggle('active', !flag);
+}
+
+function rb(text, ruby) {
+  if (!showRuby || !ruby) return text;
+  return `<ruby>${text}<rt>${ruby}</rt></ruby>`;
+}
+function subjectWithRuby(subj) {
+  return rb(subj, SUBJ_RUBY[subj] || '');
+}
+
+// ====== ユーティリティ ======
+function parseTime(str) {
+  if (!str) return 0;
+  const [h,m] = str.split(':').map(Number);
+  return h * 60 + m;
+}
+function formatTime(str) {
+  if (!str) return '';
+  const [h,m] = str.split(':').map(Number);
+  return `${h}時${m}分`;
+}
+function diffMin(s, e) { return parseTime(e) - parseTime(s); }
+
+function changeNum(id, delta) {
+  const el = document.getElementById(id);
+  let v = parseInt(el.value) + delta;
+  v = Math.max(parseInt(el.min), Math.min(parseInt(el.max), v));
+  el.value = v;
+  if (id === 'periods') rebuildEditor();
+}
+function toggleQType(cb, type) {
+  enabledTypes[type] = cb.checked;
+  document.getElementById('qt-'+type).classList.toggle('checked', cb.checked);
+}
+
+// ====== エディタ構築 ======
+function rebuildEditor() {
+  const periods = parseInt(document.getElementById('periods').value);
+
+  while (timetableData.times.length < periods) {
+    const last = timetableData.times[timetableData.times.length-1];
+    const startMin = parseTime(last[1]) + 5;
+    const endMin   = startMin + 45;
+    const pad = n => String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
+    timetableData.times.push([pad(startMin), pad(endMin)]);
+  }
+  timetableData.times = timetableData.times.slice(0, periods);
+  for (let d=0;d<5;d++) {
+    while (timetableData.subjects[d].length < periods) timetableData.subjects[d].push('');
+    timetableData.subjects[d] = timetableData.subjects[d].slice(0, periods);
+  }
+
+  let html = '<thead><tr><th>時間</th><th>開始</th><th>終了</th>';
+  DAYS.forEach(d => { html += `<th>${d}曜</th>`; });
+  html += '</tr></thead><tbody>';
+
+  for (let p=0;p<periods;p++) {
+    html += `<tr>
+      <td style="text-align:center;font-weight:700;">${p+1}時間目</td>
+      <td class="td-time"><input type="time" id="ts${p}" value="${timetableData.times[p][0]}"
+        onchange="timetableData.times[${p}][0]=this.value"></td>
+      <td class="td-time"><input type="time" id="te${p}" value="${timetableData.times[p][1]}"
+        onchange="timetableData.times[${p}][1]=this.value"></td>`;
+    for (let d=0;d<5;d++) {
+      html += `<td><input type="text" id="s${d}_${p}" value="${timetableData.subjects[d][p]}"
+        placeholder="教科" onchange="timetableData.subjects[${d}][${p}]=this.value"></td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</tbody>';
+  document.getElementById('editorTable').innerHTML = html;
+}
+
+// ====== 時間割表HTML（プリント用） ======
+function buildTimetableHTML() {
+  const periods = parseInt(document.getElementById('periods').value);
+
+  let html = `<table class="tt-table"><thead><tr>
+    <th class="col-jikan">時<br>間</th>
+    <th class="col-time">開始・終了</th>`;
+  DAYS.forEach(d => {
+    html += `<th class="col-day">${rb(d, DAY_RUBY[d])}曜</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  for (let p=0; p<periods; p++) {
+    const sStr = formatTime(timetableData.times[p][0]);
+    const eStr = formatTime(timetableData.times[p][1]);
+
+    html += `<tr>
+      <td class="col-jikan" contenteditable="true">${p+1}</td>
+      <td class="col-time">
+        <span contenteditable="true">${sStr}</span>〜<span contenteditable="true">${eStr}</span>
+      </td>`;
+
+    for (let d=0; d<5; d++) {
+      const subj = timetableData.subjects[d][p] || '';
+      html += `<td class="subj-cell" contenteditable="true">${subjectWithRuby(subj)}</td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  return html;
+}
+
+// ====== 問題生成 ======
+function generateQuestions(count) {
+  const types = Object.keys(enabledTypes).filter(k => enabledTypes[k]);
+  if (types.length === 0) return [];
+  const periods = parseInt(document.getElementById('periods').value);
+  const questions = [];
+  const used = new Set();
+  let attempts = 0;
+
+  while (questions.length < count && attempts < count * 30) {
+    attempts++;
+    const type   = types[Math.floor(Math.random() * types.length)];
+    const day    = Math.floor(Math.random() * 5);
+    const period = Math.floor(Math.random() * periods);
+    const subj   = timetableData.subjects[day][period] || '';
+    const startStr = timetableData.times[period][0];
+    const endStr   = timetableData.times[period][1];
+    const dayName  = DAYS[day];
+    const periodNum = period + 1;
+    const key = `${type}-${day}-${period}`;
+
+    if (used.has(key) && attempts < count * 15) continue;
+    if ((type === 'B' || type === 'D') && !subj) continue;
+
+    let q = null;
+
+    if (type === 'A') {
+      q = { text: `${rb(dayName, DAY_RUBY[dayName])}曜日の${periodNum}時間目は、何時に始まりますか？` };
+    } else if (type === 'B') {
+      q = { text: `${rb(dayName, DAY_RUBY[dayName])}曜日の${periodNum}時間目は、何の${rb('授業','じゅぎょう')}ですか？` };
+    } else if (type === 'C') {
+      const mins = diffMin(startStr, endStr);
+      if (isNaN(mins) || mins <= 0) continue;
+      q = { text: `${rb(dayName, DAY_RUBY[dayName])}曜日の${periodNum}時間目は、何分間ありますか？` };
+    } else if (type === 'D') {
+      q = { text: `${rb(dayName, DAY_RUBY[dayName])}曜日の「${subjectWithRuby(subj)}」は、何時間目ですか？` };
+    }
+
+    if (q) {
+      used.add(key);
+      questions.push(q);
+    }
+  }
+  return questions;
+}
+
+// ====== プリント生成 ======
+function generatePrint() {
+  const periods = parseInt(document.getElementById('periods').value);
+  for (let p=0;p<periods;p++) {
+    const ts = document.getElementById(`ts${p}`);
+    const te = document.getElementById(`te${p}`);
+    if (ts) timetableData.times[p][0] = ts.value;
+    if (te) timetableData.times[p][1] = te.value;
+    for (let d=0;d<5;d++) {
+      const el = document.getElementById(`s${d}_${p}`);
+      if (el) timetableData.subjects[d][p] = el.value;
+    }
+  }
+
+  const types = Object.keys(enabledTypes).filter(k => enabledTypes[k]);
+  if (types.length === 0) { alert('問題タイプを1つ以上選んでください。'); return; }
+
+  const qcount = parseInt(document.getElementById('qcount').value);
+  const title  = document.getElementById('sheetTitle').value || 'じかんわりをよもう';
+  const questions = generateQuestions(qcount);
+
+  let html = '';
+
+  html += `<div class="print-name-row">
+    <span class="print-name-label">なまえ</span>
+    <div class="print-name-line"></div>
+  </div>`;
+
+  html += `<div class="print-title" contenteditable="true">${title}</div>`;
+  html += buildTimetableHTML();
+
+  html += `<div class="q-section-title">もんだい</div><ul class="q-list">`;
+  questions.forEach((q, i) => {
+    html += `<li class="q-item">
+      <span class="q-num">（${i+1}）</span>
+      <span class="q-text" contenteditable="true">${q.text}</span>
+      <span class="q-ans"></span>
+    </li>`;
+  });
+  html += '</ul>';
+
+  document.getElementById('printSheet').innerHTML = html;
+  const wrap = document.getElementById('previewWrap');
+  wrap.style.display = 'block';
+  wrap.scrollIntoView({behavior:'smooth'});
+}
+
+// ====== HTMLコピー ======
+function copyHTML() {
+  const sheet  = document.getElementById('printSheet');
+  const clone  = sheet.cloneNode(true);
+  clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+
+  const fullHTML = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>時間割プリント</title>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'BIZ UDGothic',sans-serif;font-size:12pt;color:#111;background:#fff;}
+ruby rt{font-size:0.52em;}
+.print-name-row{display:flex;justify-content:flex-end;align-items:center;margin-bottom:12px;gap:6px;}
+.print-name-label{font-size:11pt;white-space:nowrap;}
+.print-name-line{border-bottom:1.5px solid #333;width:180px;height:22px;}
+.print-title{text-align:center;font-size:15pt;font-weight:700;margin-bottom:14px;letter-spacing:0.1em;}
+.tt-table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:10pt;}
+.tt-table th,.tt-table td{border:1.5px solid #555;padding:5px 4px;text-align:center;vertical-align:middle;}
+.tt-table th{background:#e0e0e0;font-weight:700;}
+.tt-table .col-jikan{width:30px;font-weight:700;font-size:9pt;}
+.tt-table .col-time{width:90px;font-size:8.5pt;color:#333;line-height:1.4;}
+.tt-table .col-day{font-size:10pt;}
+.tt-table .subj-cell{font-size:10.5pt;min-height:28px;line-height:1.5;}
+.q-section-title{font-size:11pt;font-weight:700;border-left:4px solid #555;padding-left:7px;margin-bottom:8px;margin-top:4px;}
+.q-list{list-style:none;padding:0;}
+.q-item{display:flex;align-items:baseline;gap:6px;margin-bottom:8px;font-size:11pt;line-height:1.8;}
+.q-num{font-weight:700;min-width:24px;}
+.q-text{flex:1;}
+.q-ans{border-bottom:1.5px solid #333;min-width:110px;display:inline-block;height:20px;margin-left:4px;}
+@page{size:A4;margin:15mm 10mm;}
+</style>
+</head>
+<body>${clone.outerHTML}</body>
+</html>`;
+
+  const ta = document.createElement('textarea');
+  ta.value = fullHTML;
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  alert('HTMLをクリップボードにコピーしました！');
+}
+
+// ====== 初期化 ======
+rebuildEditor();
+</script>
+</body>
+</html>
