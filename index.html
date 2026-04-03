@@ -39,21 +39,22 @@
   .ui-label { font-weight: 700; color: var(--ui-primary); margin-bottom: 6px; font-size: 13px; }
   .ui-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
 
-  .timetable-editor { width: 100%; border-collapse: collapse; font-size: 12px; }
+  /* UI側の表エディタも12ptに拡大 */
+  .timetable-editor { width: 100%; border-collapse: collapse; font-size: 12pt; }
   .timetable-editor th {
     background: var(--ui-primary-light); color: var(--ui-primary);
-    font-weight: 700; padding: 5px 6px; border: 1px solid var(--ui-border);
+    font-weight: 700; padding: 8px 6px; border: 1px solid var(--ui-border);
     text-align: center; white-space: nowrap;
   }
-  .timetable-editor td { border: 1px solid var(--ui-border); padding: 3px 4px; }
+  .timetable-editor td { border: 1px solid var(--ui-border); padding: 4px 4px; }
   .timetable-editor td input[type="text"] {
     width: 100%; border: 1px solid #ccc; border-radius: 4px;
-    padding: 3px 5px; font-family: 'BIZ UDGothic', sans-serif;
-    font-size: 12px; color: var(--ui-text);
+    padding: 4px 5px; font-family: 'BIZ UDGothic', sans-serif;
+    font-size: 12pt; color: var(--ui-text);
   }
   .timetable-editor td input[type="time"] {
-    border: 1px solid #ccc; border-radius: 4px; padding: 3px 4px;
-    font-family: 'BIZ UDGothic', sans-serif; font-size: 11px; width: 88px;
+    border: 1px solid #ccc; border-radius: 4px; padding: 4px 4px;
+    font-family: 'BIZ UDGothic', sans-serif; font-size: 12pt; width: 110px;
   }
   .td-time { background: #f9f9f9; }
 
@@ -83,13 +84,13 @@
     font-family: 'BIZ UDGothic', sans-serif; font-size: 13px;
   }
   .num-btn {
-    width: 26px; height: 26px; border: 1px solid var(--ui-border);
-    background: var(--ui-primary-light); border-radius: 4px;
-    cursor: pointer; font-size: 14px; line-height: 1;
+    width: 26px; height: 26px; border: none; /* 枠を削除 */
+    background: transparent; /* 背景色を透明に */
+    cursor: pointer; font-size: 16px; line-height: 1;
     display: flex; align-items: center; justify-content: center;
     font-weight: 700; color: var(--ui-primary);
   }
-  .num-btn:hover { background: var(--ui-primary); color: #fff; }
+  .num-btn:hover { background: #e8f4ff; border-radius: 4px; } /* ホバー時のみ少し背景色を */
 
   .btn {
     padding: 9px 20px; border: none; border-radius: 7px;
@@ -116,8 +117,11 @@
     width: 100%;
   }
   .print-name-row {
-    display: flex; justify-content: flex-end; align-items: center;
-    margin-bottom: 10px; gap: 6px;
+    display: flex; justify-content: flex-end; align-items: flex-end;
+    width: 94%; /* 表と同じ幅にして右端を揃える */
+    margin: 0 auto 35px auto; /* 名前欄と題名の間に1行分の間隔 */
+    padding-top: 35px; /* 名前欄の上に1行分の余白 */
+    gap: 6px;
   }
   .print-name-label { font-size: 11pt; white-space: nowrap; }
   .print-name-line { border-bottom: 1.5px solid #333; width: 160px; height: 22px; }
@@ -128,54 +132,62 @@
 
   /* 時間割表 */
   .tt-table {
-    width: 100%;
+    width: 94%; /* 印刷時のはみ出しを防止するため100%から縮小 */
+    margin: 0 auto 40px auto; /* 中央寄せ & 表と「問題」の間に明確に約1行分の行間（下余白）を確保 */
     table-layout: fixed;
     border-collapse: collapse;
-    margin-bottom: 14px;
-    font-size: 9.5pt;
+    font-size: 12pt; /* 問題文と同じサイズに変更 */
+  }
+  .tt-table tbody tr {
+    height: 60px; /* 高さを約20%増やす設定 */
   }
   .tt-table th, .tt-table td {
     border: 1.5px solid #555;
-    padding: 4px 3px;
+    padding: 6px 3px; /* 縦の余白も少し増やして高さを確保 */
     text-align: center;
     vertical-align: middle;
     overflow: hidden;
     word-break: break-all;
   }
   .tt-table th { background: #e0e0e0; font-weight: 700; }
-  /* 列幅: 時間4% + 開始終了13% + 曜日5列×16.6% = 100% */
-  .tt-table .col-jikan { width: 4%;  font-weight: 700; font-size: 9pt; white-space: nowrap; }
-  .tt-table .col-time  { width: 13%; font-size: 7.5pt; color: #333; line-height: 1.4; }
-  .tt-table .col-day   { width: 16.6%; font-size: 9.5pt; }
-  .tt-table .subj-cell { font-size: 10pt; line-height: 1.6; }
+  
+  /* 列幅の調整 */
+  .tt-table .col-jikan { width: 5%;  font-weight: 700; font-size: 12pt; white-space: nowrap; }
+  .tt-table .col-time  { width: 23%; font-size: 12pt; color: #333; line-height: 1.4; white-space: nowrap; } /* フォント拡大に伴い横幅を確保 */
+  .tt-table .col-day   { width: 14.4%; font-size: 12pt; }
+  .tt-table .subj-cell { font-size: 12pt; line-height: 1.6; }
   ruby rt { font-size: 0.52em; }
 
   /* 問題 */
   .q-section-title {
+    width: 94%; 
+    margin: 0 auto 40px auto; /* 表と同じ幅で配置 & 下に約1行分の余白を追加（問題文との間） */
     font-size: 12pt;
     font-weight: 700;
-    margin-bottom: 8px;
-    margin-top: 4px;
-    /* 縦線なし */
   }
-  .q-list { list-style: none; padding: 0; }
+  .q-list { 
+    width: 94%; margin: 0 auto; /* 表と同じ幅で配置 */
+    list-style: none; padding: 0; 
+  }
   .q-item {
+    position: relative; /* 解答欄の位置指定のため */
+    margin-bottom: 18pt; /* 行間を1.5倍に拡大 */
+    font-size: 12pt;
+    line-height: 1.5; /* 行間を広めに */
+  }
+  .q-text-wrap {
     display: flex;
     align-items: baseline;
-    gap: 6px;
-    margin-bottom: 12pt;   /* ★行間を拡大 */
-    font-size: 12pt;       /* ★フォントサイズ拡大 */
-    line-height: 2;        /* ★行間を拡大 */
+    width: 55%; /* 解答欄（56.8%〜）に被らないように制限 */
   }
   .q-num { font-weight: 700; min-width: 26px; flex-shrink: 0; }
   .q-text { flex: 1; }
   .q-ans {
+    position: absolute;
+    bottom: 2px; /* 下線の位置 */
+    left: 56.8%; /* 火曜と水曜の間（5% + 23% + 14.4% * 2） */
+    width: 28.8%; /* 水曜と木曜の幅（14.4% * 2）。これで木曜と金曜の間で終わる */
     border-bottom: 1.5px solid #333;
-    min-width: 100px;
-    display: inline-block;
-    height: 20px;
-    margin-left: 4px;
-    flex-shrink: 0;
   }
 
   [contenteditable="true"] {
@@ -190,10 +202,10 @@
     .ui-wrap, .preview-label, .preview-wrap > .btn-row { display: none !important; }
     .preview-wrap { border: none; padding: 0; margin: 0; border-radius: 0; }
     .print-sheet { width: 100%; }
-    @page { size: A4 portrait; margin: 12mm 8mm; }
+    @page { size: A4 portrait; margin: 15mm 8mm 12mm 8mm; } /* 上の余白を増やす */
     [contenteditable="true"] { outline: none !important; background: transparent !important; }
-    .tt-table { table-layout: fixed !important; font-size: 9pt; }
-    .q-item { font-size: 11pt; }
+    .tt-table { table-layout: fixed !important; font-size: 12pt; }
+    .q-item { font-size: 12pt; }
   }
 </style>
 </head>
@@ -204,7 +216,7 @@
   <div class="ui-body">
 
     <div class="ui-section">
-      <div class="ui-label">基本設定</div>
+      <!-- 基本設定の文字を削除 -->
       <div class="ui-row" style="margin-bottom:10px;align-items:flex-end;">
         <div>
           <div class="ui-label" style="color:#555;">1日の時間数</div>
@@ -229,10 +241,10 @@
             font-family:'BIZ UDGothic',sans-serif;font-size:13px;width:200px;">
         </div>
         <div>
-          <div class="ui-label" style="color:#555;">ルビ（振り仮名）</div>
+          <div class="ui-label" style="color:#555;">ふりがな</div>
           <div class="toggle-wrap">
-            <button class="toggle-btn active" id="rubyOn"  onclick="setRuby(true)">あり</button>
-            <button class="toggle-btn"        id="rubyOff" onclick="setRuby(false)">なし</button>
+            <button class="toggle-btn"        id="rubyOn"  onclick="setRuby(true)">あり</button>
+            <button class="toggle-btn active" id="rubyOff" onclick="setRuby(false)">なし</button>
           </div>
         </div>
       </div>
@@ -288,7 +300,6 @@ const SUBJ_RUBY = {
   生活:'せいかつ',国語:'こくご',英語:'えいご',技術:'ぎじゅつ',
   家庭:'かてい',保健:'ほけん',情報:'じょうほう'
 };
-// デフォルト時間割（国語・数学・美術・総合に更新）
 const DEFAULT_SUBJECTS = [
   ['国語','数学','体育','美術','音楽','道徳'],
   ['数学','国語','音楽','体育','理科','総合'],
@@ -306,7 +317,7 @@ let timetableData = {
   times:    JSON.parse(JSON.stringify(DEFAULT_TIMES))
 };
 let enabledTypes = {A:true,B:true,C:true,D:true};
-let showRuby = true;
+let showRuby = false; // デフォルトでルビなしに変更
 
 function setRuby(flag) {
   showRuby = flag;
@@ -381,21 +392,20 @@ function rebuildEditor() {
 
 function buildTimetableHTML() {
   const periods = parseInt(document.getElementById('periods').value);
-  // 時間4% + 開始終了13% + 曜日5列×16.6%
+  // 新しい列幅設定を反映
   let html = `<table class="tt-table">
   <colgroup>
-    <col style="width:4%">
-    <col style="width:13%">
-    <col style="width:16.6%">
-    <col style="width:16.6%">
-    <col style="width:16.6%">
-    <col style="width:16.6%">
-    <col style="width:16.6%">
+    <col style="width:5%">
+    <col style="width:23%">
+    <col style="width:14.4%">
+    <col style="width:14.4%">
+    <col style="width:14.4%">
+    <col style="width:14.4%">
+    <col style="width:14.4%">
   </colgroup>
   <thead><tr>
     <th class="col-jikan">時間</th>
     <th class="col-time">開始・終了</th>`;
-  // ★ 曜日は「月」「火」のみ（「曜」なし）
   DAYS.forEach(d => {
     html += `<th class="col-day">${rb(d, DAY_RUBY[d])}</th>`;
   });
@@ -485,12 +495,13 @@ function generatePrint() {
   </div>`;
   html += `<div class="print-title" contenteditable="true">${title}</div>`;
   html += buildTimetableHTML();
-  // ★「問題」（縦線なし）
   html += `<div class="q-section-title">${rb('問題','もんだい')}</div><ul class="q-list">`;
   questions.forEach((q, i) => {
     html += `<li class="q-item">
-      <span class="q-num">（${i+1}）</span>
-      <span class="q-text" contenteditable="true">${q.text}</span>
+      <div class="q-text-wrap">
+        <span class="q-num">（${i+1}）</span>
+        <span class="q-text" contenteditable="true">${q.text}</span>
+      </div>
       <span class="q-ans"></span>
     </li>`;
   });
@@ -506,28 +517,31 @@ function copyHTML() {
   const clone = document.getElementById('printSheet').cloneNode(true);
   clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
 
+  // コピー用HTMLにも新しいCSS設定を反映
   const css = `
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'BIZ UDGothic',sans-serif;font-size:12pt;color:#111;background:#fff;}
 ruby rt{font-size:0.52em;}
-.print-name-row{display:flex;justify-content:flex-end;align-items:center;margin-bottom:10px;gap:6px;}
+.print-name-row{display:flex;justify-content:flex-end;align-items:flex-end;width:94%;margin:0 auto 35px auto;padding-top:35px;gap:6px;}
 .print-name-label{font-size:11pt;white-space:nowrap;}
 .print-name-line{border-bottom:1.5px solid #333;width:160px;height:22px;}
 .print-title{text-align:center;font-size:15pt;font-weight:700;margin-bottom:12px;letter-spacing:0.05em;}
-.tt-table{width:100%;table-layout:fixed;border-collapse:collapse;margin-bottom:14px;font-size:9.5pt;}
-.tt-table th,.tt-table td{border:1.5px solid #555;padding:4px 3px;text-align:center;vertical-align:middle;overflow:hidden;word-break:break-all;}
+.tt-table{width:94%;margin:0 auto 40px auto;table-layout:fixed;border-collapse:collapse;font-size:12pt;}
+.tt-table tbody tr{height:60px;}
+.tt-table th,.tt-table td{border:1.5px solid #555;padding:6px 3px;text-align:center;vertical-align:middle;overflow:hidden;word-break:break-all;}
 .tt-table th{background:#e0e0e0;font-weight:700;}
-.tt-table .col-jikan{width:4%;font-weight:700;font-size:9pt;white-space:nowrap;}
-.tt-table .col-time{width:13%;font-size:7.5pt;color:#333;line-height:1.4;}
-.tt-table .col-day{width:16.6%;font-size:9.5pt;}
-.tt-table .subj-cell{font-size:10pt;line-height:1.6;}
-.q-section-title{font-size:12pt;font-weight:700;margin-bottom:8px;margin-top:4px;}
-.q-list{list-style:none;padding:0;}
-.q-item{display:flex;align-items:baseline;gap:6px;margin-bottom:12pt;font-size:12pt;line-height:2;}
+.tt-table .col-jikan{width:5%;font-weight:700;font-size:12pt;white-space:nowrap;}
+.tt-table .col-time{width:23%;font-size:12pt;color:#333;line-height:1.4;white-space:nowrap;}
+.tt-table .col-day{width:14.4%;font-size:12pt;}
+.tt-table .subj-cell{font-size:12pt;line-height:1.6;}
+.q-section-title{width:94%;margin:0 auto 40px auto;font-size:12pt;font-weight:700;}
+.q-list{width:94%;margin:0 auto;list-style:none;padding:0;}
+.q-item{position:relative;margin-bottom:18pt;font-size:12pt;line-height:1.5;}
+.q-text-wrap{display:flex;align-items:baseline;width:55%;}
 .q-num{font-weight:700;min-width:26px;flex-shrink:0;}
 .q-text{flex:1;}
-.q-ans{border-bottom:1.5px solid #333;min-width:100px;display:inline-block;height:20px;margin-left:4px;flex-shrink:0;}
-@page{size:A4 portrait;margin:12mm 8mm;}`;
+.q-ans{position:absolute;bottom:2px;left:56.8%;width:28.8%;border-bottom:1.5px solid #333;}
+@page{size:A4 portrait;margin:15mm 8mm 12mm 8mm;}`;
 
   const fullHTML = `<!DOCTYPE html>
 <html lang="ja">
